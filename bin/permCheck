@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "optparse"
+require "permCheck"
+
+begin
+  OptionParser.new do |o|
+    o.banner = "Usage: #{File.basename($0)} [options] <path> ..."
+  
+
+
+
+

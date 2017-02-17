@@ -4,11 +4,38 @@ require "bundler/setup"
 require "optparse"
 require "permCheck"
 
+umask = "202"
+smask = "020"
+group = "sec-bioinf-softwareadmins"
+mailto = nil
+
 begin
   OptionParser.new do |o|
     o.banner = "Usage: #{File.basename($0)} [options] <path> ..."
-  
+    o.on("-uMASK","--umask MASK","Permission bits which must be unset (octal)") {|o| umask = o}
+    o.on("-sMASK","--smask MASK","Permission bits which must be set (octal)") {|o| smask = o}
+    o.on("-gGROUP","--group GROUP","Group to check for") {|o| group = o}
+    o.on("-mEMAIL","--mailto EMAILS","Comma-separated list of email addresses to notify") {|o| mailto = o}
+    o.on("-v","--version","show version of the software") do
+      puts "version #{PermCheck::VERSION}"
+      exit
+    end
+    o.on_tail("-h","--help","Prints this help") do
+      puts o
+      exit
+    end
+  end.parse!
+rescue OptionParser::ParseError => pe
+  STDERR.puts pe.message
+  exit
+end
 
-
-
-
+auditor = PermCheck::PermCheck.new(umask,smask,group)
+count = 0
+ARGV.each do |path|
+  STDERR.puts "path: #{path}"
+  count += auditor.audit(path)
+end
+if count > 0
+  auditor.report(mailto)
+end

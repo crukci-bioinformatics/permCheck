@@ -14,7 +14,8 @@ to check.
 
 The package will then traverse those directories, checking file permissions
 and group ownership.  If incorrect permissions are found, the package will
-send a notification to the supplied addresses.
+send a notification to the supplied addresses.  If no email addresses are
+supplied, the notification(s) will be written to standard output.
 
 ## Installation
 

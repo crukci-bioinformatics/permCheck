@@ -3,17 +3,18 @@
 require "bundler/setup"
 require "optparse"
 require "permCheck"
+require "modeBits"
 
-umask = "202"
-smask = "020"
+umask = "-w-----w-"
+smask = "----w----"
 group = "sec-bioinf-softwareadmins"
 mailto = nil
 
 begin
   OptionParser.new do |o|
     o.banner = "Usage: #{File.basename($0)} [options] <path> ..."
-    o.on("-uMASK","--umask MASK","Permission bits which must be unset (octal)") {|o| umask = o}
-    o.on("-sMASK","--smask MASK","Permission bits which must be set (octal)") {|o| smask = o}
+    o.on("-uMASK","--umask MASK","Permission bits which must be unset (rwxrwxrwx)") {|o| umask = o}
+    o.on("-sMASK","--smask MASK","Permission bits which must be set (rwxrwxrwx)") {|o| smask = o}
     o.on("-gGROUP","--group GROUP","Group to check for") {|o| group = o}
     o.on("-mEMAIL","--mailto EMAILS","Comma-separated list of email addresses to notify") {|o| mailto = o}
     o.on("-v","--version","show version of the software") do
@@ -27,6 +28,15 @@ begin
   end.parse!
 rescue OptionParser::ParseError => pe
   STDERR.puts pe.message
+  exit
+end
+
+if !ModeBits.valid?(umask)
+  STDERR.puts "umask '#{umask}' invalid.  Use 'rwxrwxrwx' (replace unused letters with dashes)."
+  exit
+end
+if !ModeBits.valid?(smask)
+  STDERR.puts "smask '#{smask}' invalid.  Use 'rwxrwxrwx' (replace unused letters with dashes)."
   exit
 end
 

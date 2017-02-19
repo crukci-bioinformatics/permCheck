@@ -5,6 +5,7 @@ require "mail"
 require "socket"
 
 require "permCheck/version"
+require "modeBits"
 
 # Check permissons and group ownership of files.
 #
@@ -16,8 +17,8 @@ module PermCheck
 
     # Set up for audit.
     def initialize(umask,smask,group)
-      @umask = umask.to_i(base=8)
-      @smask = smask.to_i(base=8)
+      @umask = ModeBits.txt2num(umask)
+      @smask = ModeBits.txt2num(smask)
       @group = group
       @gid = Etc.getgrnam(group).gid
       @messages = []
@@ -38,10 +39,9 @@ module PermCheck
             @messages << "#{gp.name} != #{@group}: #{path}"
             bad = true
           end
-          if stat.mode&@umask || !(stat.mode&@smask)
-            modestr = stat.mode.to_s(base=8)
-            modestr = modestr[-3..-1] || modestr
-            @messages << "mode violation #{modestr}: #{path}"
+          if (stat.mode&@umask != 0) || (stat.mode&@smask == 0)
+            modestr = ModeBits.num2txt(stat.mode)
+            @messages << "mode violation #{modestr}: path '#{path}'"
             bad = true
           end
         end
@@ -72,8 +72,8 @@ module PermCheck
     def formatMsg()
       host = Socket.gethostname
       strs = ["Permissions check: #{host}\n"]
-      strs << "umask: #{"%03o" % @umask}"
-      strs << "smask: #{"%03o" % @smask}"
+      strs << "umask: #{ModeBits.num2txt(@umask)}"
+      strs << "smask: #{ModeBits.num2txt(@smask)}"
       strs << "group: #{@group}\n"
       strs << "MESSAGES:"
       @messages.each do |m|

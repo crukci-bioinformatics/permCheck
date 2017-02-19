@@ -29,19 +29,22 @@ module PermCheck
       count = 0
       Find.find(root) do |path|
         bad = false
+        stat = File.stat(path)
         if !File.readable?(path)
-          @messages << "unreadable: #{path}"
+          pwent = Etc.getpwuid(stat.uid)
+          @messages << "unreadable: path '#{path}' (#{pwent.name})"
           bad = true
         else
-          stat = File.stat(path)
           if stat.gid != @gid
             gp = Etc.getgrgid(stat.gid)
-            @messages << "#{gp.name} != #{@group}: #{path}"
+            pwent = Etc.getpwuid(stat.uid)
+            @messages << "group #{gp.name} != #{@group}: path '#{path}' (#{pwent.name})"
             bad = true
           end
           if (stat.mode&@umask != 0) || (stat.mode&@smask == 0)
             modestr = ModeBits.num2txt(stat.mode)
-            @messages << "mode violation #{modestr}: path '#{path}'"
+            pwent = Etc.getpwuid(stat.uid)
+            @messages << "mode violation #{modestr}: path '#{path}' (#{pwent.name})"
             bad = true
           end
         end
@@ -61,7 +64,7 @@ module PermCheck
       else
         targets = mailto.split(",")
         Mail.deliver do
-          from    "audit@#{Socket.gethostname}"
+          from    "permissionsAudit@#{Socket.gethostname}"
           to      targets
           subject "file permissions check"
           body    text

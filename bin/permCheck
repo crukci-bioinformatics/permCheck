@@ -43,7 +43,6 @@ end
 auditor = PermCheck::PermCheck.new(umask,smask,group)
 count = 0
 ARGV.each do |path|
-  STDERR.puts "path: #{path}"
   count += auditor.audit(path)
 end
 if count > 0

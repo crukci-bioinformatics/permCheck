@@ -35,7 +35,22 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Run the package as
+
+```
+permCheck [options] path ...
+```
+
+where the options are:
+
+* `-u/--umask` -- permission bits which must *not* be set, as 9 characters: `rwxrwxrwx`, where the bits which must not be set are those letters, and others are dashes, e.g. `----w--w-` indicates that the relevant files must not be group- or world-writeable.
+* `-s/--smask` -- permission bits which *must* be set, with syntax as above.
+* `-g/--group` -- group that files must be owned by.
+* `-m/--mailto` -- comma-separated list of email addresses to send results to; if omitted, results are written to stdout.
+* `-v/--version` -- displays version of the program and exits.
+* `-h/--help` -- displays program usage.
+
+and the path(s) is(are) the paths to check for violations.
 
 ## Development
 
@@ -59,4 +74,3 @@ https://github.com/crukci-bioinformatics/permCheck.
 
 The gem is available as open source under the terms of the
 [MIT License](http://opensource.org/licenses/MIT).
-

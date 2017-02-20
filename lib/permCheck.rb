@@ -79,6 +79,7 @@ module PermCheck
       strs << "smask: #{ModeBits.num2txt(@smask)}"
       strs << "group: #{@group}\n"
       strs << "MESSAGES:"
+      @messages.sort!
       @messages.each do |m|
         strs << m
       end

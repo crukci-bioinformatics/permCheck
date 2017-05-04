@@ -29,23 +29,30 @@ module PermCheck
       count = 0
       Find.find(root) do |path|
         bad = false
-        stat = File.stat(path)
-        if !File.readable?(path)
-          pwent = Etc.getpwuid(stat.uid)
-          @messages << "unreadable: path '#{path}' (#{pwent.name})"
+        if !File.exist?(path)
+          lstat = File.lstat(path)
+          pwent = Etc.getpwuid(lstat.uid)
+          @messages << "missing file (probable broken link): path '#{path}' (#{pwent.name})"
           bad = true
         else
-          if stat.gid != @gid
-            gp = Etc.getgrgid(stat.gid)
+          stat = File.stat(path)
+          if !File.readable?(path)
             pwent = Etc.getpwuid(stat.uid)
-            @messages << "group #{gp.name} != #{@group}: path '#{path}' (#{pwent.name})"
+            @messages << "unreadable: path '#{path}' (#{pwent.name})"
             bad = true
-          end
-          if (stat.mode&@umask != 0) || (stat.mode&@smask == 0)
-            modestr = ModeBits.num2txt(stat.mode)
-            pwent = Etc.getpwuid(stat.uid)
-            @messages << "mode violation #{modestr}: path '#{path}' (#{pwent.name})"
-            bad = true
+          else
+            if stat.gid != @gid
+              gp = Etc.getgrgid(stat.gid)
+              pwent = Etc.getpwuid(stat.uid)
+              @messages << "group #{gp.name} != #{@group}: path '#{path}' (#{pwent.name})"
+              bad = true
+            end
+            if (stat.mode&@umask != 0) || (stat.mode&@smask == 0)
+              modestr = ModeBits.num2txt(stat.mode)
+              pwent = Etc.getpwuid(stat.uid)
+              @messages << "mode violation #{modestr}: path '#{path}' (#{pwent.name})"
+              bad = true
+            end
           end
         end
         if bad

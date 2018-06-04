@@ -3,6 +3,7 @@ require "fileutils"
 require "find"
 require "mail"
 require "socket"
+require "date"
 
 require "permCheck/version"
 require "modeBits"
@@ -81,7 +82,8 @@ module PermCheck
 
     def formatMsg()
       host = Socket.gethostname
-      strs = ["Permissions check: #{host}\n"]
+      runningAt = Time.now.strftime("%Y-%b-%d %H:%M")
+      strs = ["Permissions check: #{host} at #{runningAt}\n"]
       strs << "umask: #{ModeBits.num2txt(@umask)}"
       strs << "smask: #{ModeBits.num2txt(@smask)}"
       strs << "group: #{@group}\n"

@@ -30,11 +30,21 @@ module PermCheck
       count = 0
       Find.find(root) do |path|
         bad = false
-        if !File.exist?(path)
+        if File.symlink?(path)
           lstat = File.lstat(path)
-          pwent = Etc.getpwuid(lstat.uid)
-          @messages << "missing file (probable broken link): path '#{path}' (#{pwent.name})"
-          bad = true
+          if !File.exist?(path)
+            pwent = Etc.getpwuid(lstat.uid)
+            @messages << "missing file (probable broken link): path '#{path}' (#{pwent.name})"
+            bad = true
+          else
+            # check group ownership of link (not target)
+            if lstat.gid != @gid
+              gp = Etc.getgrgid(lstat.gid)
+              pwent = Etc.getpwuid(lstat.uid)
+              @messages << "group #{gp.name} != #{@group}: path '#{path}' (#{pwent.name})"
+              bad = true
+            end
+          end
         else
           stat = File.stat(path)
           if !File.readable?(path)

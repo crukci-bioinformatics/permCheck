@@ -1,5 +1,9 @@
 # Change Log
 
+## 2018-11-30:  V1.0.5
+
+* Report status of symbolic links, not their targets.
+
 ## 2017-05-04:  v1.0.3
 
 * Fixed bug: crash on broken symbolic links

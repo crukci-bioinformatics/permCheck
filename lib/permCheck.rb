@@ -32,18 +32,16 @@ module PermCheck
         bad = false
         if File.symlink?(path)
           lstat = File.lstat(path)
-          if !File.exist?(path)
+          # check group ownership of link (not target)
+          # note we don't check permissions, or existence of target,
+          # because permissions are irrelevant for symlinks, and
+          # we don't care if those symlinks are broken.  (Somebody
+          # else can care about that.)
+          if lstat.gid != @gid
+            gp = Etc.getgrgid(lstat.gid)
             pwent = Etc.getpwuid(lstat.uid)
-            @messages << "missing file (probable broken link): path '#{path}' (#{pwent.name})"
+            @messages << "group #{gp.name} != #{@group}: path '#{path}' (#{pwent.name})"
             bad = true
-          else
-            # check group ownership of link (not target)
-            if lstat.gid != @gid
-              gp = Etc.getgrgid(lstat.gid)
-              pwent = Etc.getpwuid(lstat.uid)
-              @messages << "group #{gp.name} != #{@group}: path '#{path}' (#{pwent.name})"
-              bad = true
-            end
           end
         else
           stat = File.stat(path)

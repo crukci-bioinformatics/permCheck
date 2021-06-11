@@ -1,0 +1,37 @@
+Bootstrap: docker
+From: centos:8
+
+%post
+    #
+    # install required packages
+    #
+    dnf --assumeyes upgrade
+    dnf --assumeyes install glibc-langpack-en
+    dnf --assumeyes install which wget make gcc zlib-devel bzip2-devel openssl-devel readline-devel gdbm-devel git
+
+    #
+    # retrieve and build Ruby
+    #
+    cd /usr/local/src
+    wget https://cache.ruby-lang.org/pub/ruby/2.7/ruby-2.7.3.tar.gz
+    tar xf ruby-2.7.3.tar.gz
+    cd ruby-2.7.3
+    ./configure
+    make
+    make install
+    gem install rake minitest mail
+
+    #
+    # get and install permCheck
+    #
+    cd /usr/local/src
+    git clone https://github.com/crukci-bioinformatics/permCheck.git
+    cd permCheck
+#    bundle install
+    gem build permCheck.gemspec
+    gem install permCheck-1.0.6.gem
+
+    #
+    # create group, so we can test for it
+    #
+    echo 'bioinformatics:x:1592081963:' >>/etc/group

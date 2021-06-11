@@ -2,5 +2,5 @@ module PermCheck
   # The package name.
   PACKAGE = "permCheck"
   # The version of the package, unsurprisingly.
-  VERSION = "1.0.6"
+  VERSION = "1.0.7"
 end
